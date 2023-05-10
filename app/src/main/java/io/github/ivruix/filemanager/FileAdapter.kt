@@ -1,5 +1,6 @@
 package io.github.ivruix.filemanager
 
+import android.content.Context
 import android.graphics.BitmapFactory
 import android.view.ContextMenu
 import android.view.LayoutInflater
@@ -8,6 +9,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import java.io.File
 import java.nio.file.Files
@@ -17,7 +20,7 @@ import java.util.Date
 import java.util.Locale
 
 
-class FileAdapter(private val files: ArrayList<File>) : RecyclerView.Adapter<FileAdapter.ViewHolder>() {
+class FileAdapter(private val context: Context, private val files: ArrayList<File>) : RecyclerView.Adapter<FileAdapter.ViewHolder>() {
 
     interface OnItemClickListener {
         fun onItemClick(file: File)
@@ -35,6 +38,7 @@ class FileAdapter(private val files: ArrayList<File>) : RecyclerView.Adapter<Fil
         val fileName: TextView = itemView.findViewById(R.id.file_name)
         val fileSize: TextView = itemView.findViewById(R.id.file_size)
         val fileDate: TextView = itemView.findViewById(R.id.file_date)
+        val constraintLayout: ConstraintLayout = itemView.findViewById(R.id.constraint_layout)
 
         init {
             itemView.setOnClickListener {
@@ -74,6 +78,18 @@ class FileAdapter(private val files: ArrayList<File>) : RecyclerView.Adapter<Fil
             holder.fileSize.text = "Folder"
         } else {
             holder.fileSize.text = bytesToString(file.length())
+
+            val db = FileHashDatabaseHelper(context)
+
+            val hash = db.getFileHash(file)
+
+            if (hash != null) {
+                val newHash = db.calculateHash(file)
+
+                if (newHash != hash) {
+                    holder.constraintLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.light_blue))
+                }
+            }
 
             when (file.extension) {
                 "avi" -> holder.fileIcon.setImageResource(R.drawable.avi)

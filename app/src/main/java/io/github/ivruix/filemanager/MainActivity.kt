@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        adapter = FileAdapter(getFiles(currentPath ?: Environment.getExternalStorageDirectory().absolutePath))
+        adapter = FileAdapter(this, getFiles())
         adapter.setOnItemClickListener(this)
         adapter.setOnFileLongClickListener(this)
         recyclerView.adapter = adapter
@@ -128,9 +128,9 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
     }
 
-    private fun getFiles(path: String): ArrayList<File> {
+    private fun getFiles(): ArrayList<File> {
         val files = ArrayList<File>()
-        val directory = File(path)
+        val directory = File(currentPath ?: Environment.getExternalStorageDirectory().absolutePath)
 
         val fileList = directory.listFiles()
 
@@ -196,5 +196,13 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         }
 
         return true
+    }
+
+    override fun onDestroy() {
+        val db = FileHashDatabaseHelper(this)
+        for (file in getFiles()) {
+            db.insertFileHash(file)
+        }
+        super.onDestroy()
     }
 }
