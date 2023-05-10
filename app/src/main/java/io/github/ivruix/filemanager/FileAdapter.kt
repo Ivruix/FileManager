@@ -76,11 +76,23 @@ class FileAdapter(private val files: ArrayList<File>) : RecyclerView.Adapter<Fil
             holder.fileSize.text = bytesToString(file.length())
 
             when (file.extension) {
+                "avi" -> holder.fileIcon.setImageResource(R.drawable.avi)
+                "bin" -> holder.fileIcon.setImageResource(R.drawable.bin)
+                "doc" -> holder.fileIcon.setImageResource(R.drawable.doc)
+                "docx" -> holder.fileIcon.setImageResource(R.drawable.docx)
+                "exe" -> holder.fileIcon.setImageResource(R.drawable.exe)
+                "mkv" -> holder.fileIcon.setImageResource(R.drawable.mkv)
+                "mov" -> holder.fileIcon.setImageResource(R.drawable.mov)
+                "mp3" -> holder.fileIcon.setImageResource(R.drawable.mp3)
+                "mp4" -> holder.fileIcon.setImageResource(R.drawable.mp4)
                 "pdf" -> holder.fileIcon.setImageResource(R.drawable.pdf)
+                "ppt" -> holder.fileIcon.setImageResource(R.drawable.ppt)
                 "rar" -> holder.fileIcon.setImageResource(R.drawable.rar)
                 "txt" -> holder.fileIcon.setImageResource(R.drawable.txt)
+                "xls" -> holder.fileIcon.setImageResource(R.drawable.xls)
+                "xlsx" -> holder.fileIcon.setImageResource(R.drawable.xlsx)
                 "zip" -> holder.fileIcon.setImageResource(R.drawable.zip)
-                "png", "jpg" -> {
+                "png", "jpg", "bmp" -> {
                     val bitmap = BitmapFactory.decodeFile(file.absolutePath)
                     holder.fileIcon.setImageBitmap(bitmap)
                 }
