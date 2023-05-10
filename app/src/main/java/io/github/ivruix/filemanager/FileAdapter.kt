@@ -1,7 +1,9 @@
 package io.github.ivruix.filemanager
 
 import android.graphics.BitmapFactory
+import android.view.ContextMenu
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -21,9 +23,14 @@ class FileAdapter(private val files: ArrayList<File>) : RecyclerView.Adapter<Fil
         fun onItemClick(file: File)
     }
 
-    private var onItemClickListener: OnItemClickListener? = null
+    interface OnFileLongClickListener {
+        fun onFileLongClick(file: File, view: View)
+    }
 
-    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    private var onItemClickListener: OnItemClickListener? = null
+    private var onFileLongClickListener: OnFileLongClickListener? = null
+
+    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnCreateContextMenuListener {
         val fileIcon: ImageView = itemView.findViewById(R.id.file_icon)
         val fileName: TextView = itemView.findViewById(R.id.file_name)
         val fileSize: TextView = itemView.findViewById(R.id.file_size)
@@ -32,6 +39,19 @@ class FileAdapter(private val files: ArrayList<File>) : RecyclerView.Adapter<Fil
         init {
             itemView.setOnClickListener {
                 onItemClickListener?.onItemClick(files[adapterPosition])
+            }
+
+            itemView.setOnCreateContextMenuListener(this)
+        }
+
+        override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenu.ContextMenuInfo?) {
+            val position = adapterPosition
+            val file = files[position]
+            if (files[position].isFile) {
+                menu?.add(Menu.NONE, 0, Menu.NONE, "Share")?.setOnMenuItemClickListener {
+                    onFileLongClickListener?.onFileLongClick(file, itemView)
+                    true
+                }
             }
         }
     }
@@ -87,5 +107,9 @@ class FileAdapter(private val files: ArrayList<File>) : RecyclerView.Adapter<Fil
 
     fun setOnItemClickListener(onItemClickListener: OnItemClickListener) {
         this.onItemClickListener = onItemClickListener
+    }
+
+    fun setOnFileLongClickListener(onFileLongClickListener: OnFileLongClickListener) {
+        this.onFileLongClickListener = onFileLongClickListener
     }
 }

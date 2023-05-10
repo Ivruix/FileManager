@@ -5,13 +5,14 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
+import android.view.View
 import android.webkit.MimeTypeMap
 import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.io.File
 
-class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener {
+class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileAdapter.OnFileLongClickListener {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: FileAdapter
@@ -31,6 +32,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener {
 
         adapter = FileAdapter(getFiles(path))
         adapter.setOnItemClickListener(this)
+        adapter.setOnFileLongClickListener(this)
         recyclerView.adapter = adapter
     }
 
@@ -44,6 +46,14 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener {
         } else {
             launchFile(file)
         }
+    }
+
+    override fun onFileLongClick(file: File, view: View) {
+        val uri = FileProvider.getUriForFile(this, applicationContext.packageName + ".provider", file)
+        val shareIntent = Intent(Intent.ACTION_SEND)
+        shareIntent.type = "*/*"
+        shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
+        startActivity(Intent.createChooser(shareIntent, "Share file using"))
     }
 
     private fun launchFile(file: File) {
