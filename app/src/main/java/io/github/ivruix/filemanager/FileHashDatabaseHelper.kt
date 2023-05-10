@@ -51,10 +51,12 @@ class FileHashDatabaseHelper(context: Context) :
             null,
             null
         )
+        // If hash exists for this file return it, otherwise return null
         return if (cursor.moveToFirst()) cursor.getString(cursor.getColumnIndex(COLUMN_HASH)) else null
     }
 
     fun calculateHash(file: File): String {
+        // Calculate hash using SHA-256 algorithm
         val md = MessageDigest.getInstance("SHA-256")
         val inputStream = FileInputStream(file)
         val buffer = ByteArray(8192)

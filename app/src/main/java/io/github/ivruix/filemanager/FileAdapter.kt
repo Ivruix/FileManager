@@ -55,6 +55,8 @@ class FileAdapter(private val context: Context, private val files: ArrayList<Fil
         ) {
             val position = adapterPosition
             val file = files[position]
+
+            // Add share menu for files
             if (files[position].isFile) {
                 menu?.add(Menu.NONE, 0, Menu.NONE, "Share")?.setOnMenuItemClickListener {
                     onFileLongClickListener?.onFileLongClick(file, itemView)
@@ -83,13 +85,11 @@ class FileAdapter(private val context: Context, private val files: ArrayList<Fil
         } else {
             holder.fileSize.text = bytesToString(file.length())
 
+            // Check whether the file has been changed
             val db = FileHashDatabaseHelper(context)
-
             val hash = db.getFileHash(file)
-
             if (hash != null) {
                 val newHash = db.calculateHash(file)
-
                 if (newHash != hash) {
                     holder.constraintLayout.setBackgroundColor(
                         ContextCompat.getColor(
@@ -99,6 +99,7 @@ class FileAdapter(private val context: Context, private val files: ArrayList<Fil
                 }
             }
 
+            // Choose an appropriate icon
             when (file.extension) {
                 "avi" -> holder.fileIcon.setImageResource(R.drawable.avi)
                 "bin" -> holder.fileIcon.setImageResource(R.drawable.bin)
@@ -117,6 +118,7 @@ class FileAdapter(private val context: Context, private val files: ArrayList<Fil
                 "xlsx" -> holder.fileIcon.setImageResource(R.drawable.xlsx)
                 "zip" -> holder.fileIcon.setImageResource(R.drawable.zip)
                 "png", "jpg", "bmp" -> {
+                    // Set preview for images
                     val bitmap = BitmapFactory.decodeFile(file.absolutePath)
                     holder.fileIcon.setImageBitmap(bitmap)
                 }

@@ -47,8 +47,10 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // Get current path
         currentPath = intent.getStringExtra("path")
 
+        // Check for permissions
         if (!allPermissionsGranted()) {
             ActivityCompat.requestPermissions(this, requiredPermissions, REQUEST_CODE_PERMISSIONS)
         } else {
@@ -80,7 +82,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener,
         recyclerView.adapter = adapter
     }
 
-
+    // Checks whether all necessary permissions are granted
     private fun allPermissionsGranted(): Boolean {
         for (permission in requiredPermissions) {
             if (ContextCompat.checkSelfPermission(
@@ -95,15 +97,18 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener,
 
     override fun onItemClick(file: File) {
         if (file.isDirectory) {
+            // If user clicked on a directory navigate into it
             val intent = Intent(this, MainActivity::class.java)
             intent.putExtra("path", file.absolutePath)
             startActivity(intent)
         } else {
+            // If user clicked on a file open it
             launchFile(file)
         }
     }
 
     override fun onFileLongClick(file: File, view: View) {
+        // Share file on long click
         val uri =
             FileProvider.getUriForFile(this, applicationContext.packageName + ".provider", file)
         val shareIntent = Intent(Intent.ACTION_SEND)
@@ -121,6 +126,8 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener,
         intent.setDataAndType(uri, mimeType)
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
+        // Check if an app exists that can open this file
+        // If there are multiple suitable apps then give user a choice between them
         val chooser = Intent.createChooser(intent, "Open with")
         if (intent.resolveActivity(packageManager) != null) {
             startActivity(chooser)
@@ -144,13 +151,13 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener,
             }
         }
 
+        // Sort files
         when (sortBy) {
             SortBy.SORT_BY_NAME -> files.sortBy { it.name }
             SortBy.SORT_BY_SIZE -> files.sortBy { if (it.isFile) it.length() else 0 }
             SortBy.SORT_BY_TIME_OF_CREATION -> files.sortBy { getFileTimeOfCreation(it) }
             SortBy.SORT_BY_EXTENSION -> files.sortBy { if (it.isFile) it.extension else "" }
         }
-
         if (!sortAscending) {
             files.reverse()
         }
@@ -207,6 +214,7 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener,
     }
 
     override fun onDestroy() {
+        // Update file hashes
         val db = FileHashDatabaseHelper(this)
         for (file in getFiles()) {
             db.insertFileHash(file)
