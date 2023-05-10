@@ -8,9 +8,12 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.attribute.BasicFileAttributes
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
 
 class FileAdapter(private val files: ArrayList<File>) : RecyclerView.Adapter<FileAdapter.ViewHolder>() {
 
@@ -44,7 +47,7 @@ class FileAdapter(private val files: ArrayList<File>) : RecyclerView.Adapter<Fil
         holder.fileName.text = file.name
 
         val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.US)
-        holder.fileDate.text = simpleDateFormat.format(Date(file.lastModified()))
+        holder.fileDate.text = simpleDateFormat.format(Date(getFileTimeOfCreation(file)))
 
         if (file.isDirectory) {
             holder.fileIcon.setImageResource(R.drawable.folder)
@@ -64,6 +67,14 @@ class FileAdapter(private val files: ArrayList<File>) : RecyclerView.Adapter<Fil
                 else -> holder.fileIcon.setImageResource(R.drawable.blank)
             }
         }
+    }
+
+    private fun getFileTimeOfCreation(file: File) : Long {
+        val attr = Files.readAttributes(
+            file.toPath(),
+            BasicFileAttributes::class.java
+        )
+        return attr.creationTime().toMillis()
     }
 
     private fun bytesToString(bytes: Long) : String {
