@@ -1,18 +1,31 @@
 package io.github.ivruix.filemanager
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
 import android.webkit.MimeTypeMap
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.io.File
 
 class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileAdapter.OnFileLongClickListener {
+    companion object {
+        private const val REQUEST_CODE_PERMISSIONS = 123
+    }
+
+    private val requiredPermissions = arrayOf(
+        Manifest.permission.READ_EXTERNAL_STORAGE,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE
+    )
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: FileAdapter
@@ -21,22 +34,44 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        if (!allPermissionsGranted()) {
+            ActivityCompat.requestPermissions(this, requiredPermissions, REQUEST_CODE_PERMISSIONS)
+        } else {
+            initRecyclerView(intent.getStringExtra("path"))
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            if (!allPermissionsGranted()) {
+                Toast.makeText(this, "Permission not granted", Toast.LENGTH_SHORT).show()
+                finish()
+            } else {
+                initRecyclerView()
+            }
+        }
+    }
+
+    private fun initRecyclerView(path : String? = null) {
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        var path = Environment.getExternalStorageDirectory().absolutePath
-
-        if (intent.hasExtra("path")) {
-            path = intent.getStringExtra("path")
-        }
-
-        adapter = FileAdapter(getFiles(path))
+        adapter = FileAdapter(getFiles(path ?: Environment.getExternalStorageDirectory().absolutePath))
         adapter.setOnItemClickListener(this)
         adapter.setOnFileLongClickListener(this)
         recyclerView.adapter = adapter
     }
 
 
+    private fun allPermissionsGranted(): Boolean {
+        for (permission in requiredPermissions) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                return false
+            }
+        }
+        return true
+    }
 
     override fun onItemClick(file: File) {
         if (file.isDirectory) {
