@@ -20,7 +20,8 @@ import java.util.Date
 import java.util.Locale
 
 
-class FileAdapter(private val context: Context, private val files: ArrayList<File>) : RecyclerView.Adapter<FileAdapter.ViewHolder>() {
+class FileAdapter(private val context: Context, private val files: ArrayList<File>) :
+    RecyclerView.Adapter<FileAdapter.ViewHolder>() {
 
     interface OnItemClickListener {
         fun onItemClick(file: File)
@@ -33,7 +34,8 @@ class FileAdapter(private val context: Context, private val files: ArrayList<Fil
     private var onItemClickListener: OnItemClickListener? = null
     private var onFileLongClickListener: OnFileLongClickListener? = null
 
-    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnCreateContextMenuListener {
+    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView),
+        View.OnCreateContextMenuListener {
         val fileIcon: ImageView = itemView.findViewById(R.id.file_icon)
         val fileName: TextView = itemView.findViewById(R.id.file_name)
         val fileSize: TextView = itemView.findViewById(R.id.file_size)
@@ -48,7 +50,9 @@ class FileAdapter(private val context: Context, private val files: ArrayList<Fil
             itemView.setOnCreateContextMenuListener(this)
         }
 
-        override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenu.ContextMenuInfo?) {
+        override fun onCreateContextMenu(
+            menu: ContextMenu?, v: View?, menuInfo: ContextMenu.ContextMenuInfo?
+        ) {
             val position = adapterPosition
             val file = files[position]
             if (files[position].isFile) {
@@ -87,7 +91,11 @@ class FileAdapter(private val context: Context, private val files: ArrayList<Fil
                 val newHash = db.calculateHash(file)
 
                 if (newHash != hash) {
-                    holder.constraintLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.light_blue))
+                    holder.constraintLayout.setBackgroundColor(
+                        ContextCompat.getColor(
+                            context, R.color.light_blue
+                        )
+                    )
                 }
             }
 
@@ -112,6 +120,7 @@ class FileAdapter(private val context: Context, private val files: ArrayList<Fil
                     val bitmap = BitmapFactory.decodeFile(file.absolutePath)
                     holder.fileIcon.setImageBitmap(bitmap)
                 }
+
                 else -> holder.fileIcon.setImageResource(R.drawable.blank)
             }
         }
@@ -126,15 +135,14 @@ class FileAdapter(private val context: Context, private val files: ArrayList<Fil
     }
 
 
-    private fun getFileTimeOfCreation(file: File) : Long {
+    private fun getFileTimeOfCreation(file: File): Long {
         val attr = Files.readAttributes(
-            file.toPath(),
-            BasicFileAttributes::class.java
+            file.toPath(), BasicFileAttributes::class.java
         )
         return attr.creationTime().toMillis()
     }
 
-    private fun bytesToString(bytes: Long) : String {
+    private fun bytesToString(bytes: Long): String {
         return "$bytes B"
     }
 

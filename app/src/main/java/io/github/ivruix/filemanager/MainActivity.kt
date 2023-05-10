@@ -21,12 +21,10 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.BasicFileAttributes
 
-class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileAdapter.OnFileLongClickListener {
+class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener,
+    FileAdapter.OnFileLongClickListener {
     enum class SortBy {
-        SORT_BY_NAME,
-        SORT_BY_SIZE,
-        SORT_BY_TIME_OF_CREATION,
-        SORT_BY_EXTENSION
+        SORT_BY_NAME, SORT_BY_SIZE, SORT_BY_TIME_OF_CREATION, SORT_BY_EXTENSION
     }
 
     companion object {
@@ -34,17 +32,16 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     }
 
     private val requiredPermissions = arrayOf(
-        Manifest.permission.READ_EXTERNAL_STORAGE,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
+        Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE
     )
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: FileAdapter
 
-    private var sortBy : SortBy = SortBy.SORT_BY_NAME
-    private var sortAscending : Boolean = true
+    private var sortBy: SortBy = SortBy.SORT_BY_NAME
+    private var sortAscending: Boolean = true
 
-    private var currentPath : String? = null
+    private var currentPath: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,7 +56,9 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
             if (!allPermissionsGranted()) {
@@ -84,7 +83,10 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
 
     private fun allPermissionsGranted(): Boolean {
         for (permission in requiredPermissions) {
-            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(
+                    this, permission
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
                 return false
             }
         }
@@ -102,7 +104,8 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     }
 
     override fun onFileLongClick(file: File, view: View) {
-        val uri = FileProvider.getUriForFile(this, applicationContext.packageName + ".provider", file)
+        val uri =
+            FileProvider.getUriForFile(this, applicationContext.packageName + ".provider", file)
         val shareIntent = Intent(Intent.ACTION_SEND)
         shareIntent.type = "*/*"
         shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
@@ -110,7 +113,8 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     }
 
     private fun launchFile(file: File) {
-        val uri = FileProvider.getUriForFile(this, applicationContext.packageName + ".provider", file)
+        val uri =
+            FileProvider.getUriForFile(this, applicationContext.packageName + ".provider", file)
         val intent = Intent(Intent.ACTION_VIEW)
         val mimeType = getMimeType(uri)
 
@@ -154,10 +158,9 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         return files
     }
 
-    private fun getFileTimeOfCreation(file: File) : Long {
+    private fun getFileTimeOfCreation(file: File): Long {
         val attr = Files.readAttributes(
-            file.toPath(),
-            BasicFileAttributes::class.java
+            file.toPath(), BasicFileAttributes::class.java
         )
         return attr.creationTime().toMillis()
     }
@@ -173,22 +176,27 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
                 sortBy = SortBy.SORT_BY_NAME
                 initRecyclerView()
             }
+
             R.id.menu_sort_by_size -> {
                 sortBy = SortBy.SORT_BY_SIZE
                 initRecyclerView()
             }
+
             R.id.menu_sort_by_time_of_creation -> {
                 sortBy = SortBy.SORT_BY_TIME_OF_CREATION
                 initRecyclerView()
             }
+
             R.id.menu_sort_by_extension -> {
                 sortBy = SortBy.SORT_BY_EXTENSION
                 initRecyclerView()
             }
+
             R.id.menu_sort_ascending -> {
                 sortAscending = true
                 initRecyclerView()
             }
+
             R.id.menu_sort_descending -> {
                 sortAscending = false
                 initRecyclerView()

@@ -8,7 +8,8 @@ import java.io.File
 import java.io.FileInputStream
 import java.security.MessageDigest
 
-class FileHashDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+class FileHashDatabaseHelper(context: Context) :
+    SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
         private const val DATABASE_NAME = "file_hash.db"
@@ -19,7 +20,8 @@ class FileHashDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATAB
     }
 
     override fun onCreate(db: SQLiteDatabase) {
-        val createTable = "CREATE TABLE $TABLE_NAME ($COLUMN_PATH TEXT PRIMARY KEY, $COLUMN_HASH TEXT)"
+        val createTable =
+            "CREATE TABLE $TABLE_NAME ($COLUMN_PATH TEXT PRIMARY KEY, $COLUMN_HASH TEXT)"
         db.execSQL(createTable)
     }
 
@@ -34,11 +36,21 @@ class FileHashDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATAB
             put(COLUMN_PATH, file.path)
             put(COLUMN_HASH, hash)
         }
-        writableDatabase.insertWithOnConflict(TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE)
+        writableDatabase.insertWithOnConflict(
+            TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE
+        )
     }
 
     fun getFileHash(file: File): String? {
-        val cursor = readableDatabase.query(TABLE_NAME, arrayOf(COLUMN_HASH), "$COLUMN_PATH = ?", arrayOf(file.canonicalPath), null, null, null)
+        val cursor = readableDatabase.query(
+            TABLE_NAME,
+            arrayOf(COLUMN_HASH),
+            "$COLUMN_PATH = ?",
+            arrayOf(file.canonicalPath),
+            null,
+            null,
+            null
+        )
         return if (cursor.moveToFirst()) cursor.getString(cursor.getColumnIndex(COLUMN_HASH)) else null
     }
 
