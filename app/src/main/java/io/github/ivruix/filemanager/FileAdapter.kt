@@ -64,7 +64,7 @@ class FileAdapter(private val files: ArrayList<File>) : RecyclerView.Adapter<Fil
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val file = files[position]
 
-        holder.fileName.text = file.name
+        holder.fileName.text = truncateFileName(file.name, 35)
 
         val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.US)
         holder.fileDate.text = simpleDateFormat.format(Date(getFileTimeOfCreation(file)))
@@ -100,6 +100,15 @@ class FileAdapter(private val files: ArrayList<File>) : RecyclerView.Adapter<Fil
             }
         }
     }
+
+    private fun truncateFileName(fileName: String, maxLength: Int): String {
+        return if (fileName.length <= maxLength) {
+            fileName
+        } else {
+            fileName.substring(0, maxLength - 3) + "..."
+        }
+    }
+
 
     private fun getFileTimeOfCreation(file: File) : Long {
         val attr = Files.readAttributes(
