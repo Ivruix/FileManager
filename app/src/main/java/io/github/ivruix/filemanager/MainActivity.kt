@@ -7,6 +7,8 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.webkit.MimeTypeMap
 import android.widget.Toast
@@ -16,8 +18,17 @@ import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.attribute.BasicFileAttributes
 
 class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileAdapter.OnFileLongClickListener {
+    enum class SortBy {
+        SORT_BY_NAME,
+        SORT_BY_SIZE,
+        SORT_BY_TIME_OF_CREATION,
+        SORT_BY_EXTENSION
+    }
+
     companion object {
         private const val REQUEST_CODE_PERMISSIONS = 123
     }
@@ -30,14 +41,21 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: FileAdapter
 
+    private var sortBy : SortBy = SortBy.SORT_BY_NAME
+    private var sortAscending : Boolean = true
+
+    private var currentPath : String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        currentPath = intent.getStringExtra("path")
+
         if (!allPermissionsGranted()) {
             ActivityCompat.requestPermissions(this, requiredPermissions, REQUEST_CODE_PERMISSIONS)
         } else {
-            initRecyclerView(intent.getStringExtra("path"))
+            initRecyclerView()
         }
     }
 
@@ -53,11 +71,11 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
         }
     }
 
-    private fun initRecyclerView(path : String? = null) {
+    private fun initRecyclerView() {
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        adapter = FileAdapter(getFiles(path ?: Environment.getExternalStorageDirectory().absolutePath))
+        adapter = FileAdapter(getFiles(currentPath ?: Environment.getExternalStorageDirectory().absolutePath))
         adapter.setOnItemClickListener(this)
         adapter.setOnFileLongClickListener(this)
         recyclerView.adapter = adapter
@@ -122,6 +140,61 @@ class MainActivity : AppCompatActivity(), FileAdapter.OnItemClickListener, FileA
             }
         }
 
+        when (sortBy) {
+            SortBy.SORT_BY_NAME -> files.sortBy { it.name }
+            SortBy.SORT_BY_SIZE -> files.sortBy { if (it.isFile) it.length() else 0 }
+            SortBy.SORT_BY_TIME_OF_CREATION -> files.sortBy { getFileTimeOfCreation(it) }
+            SortBy.SORT_BY_EXTENSION -> files.sortBy { if (it.isFile) it.extension else "" }
+        }
+
+        if (!sortAscending) {
+            files.reverse()
+        }
+
         return files
+    }
+
+    private fun getFileTimeOfCreation(file: File) : Long {
+        val attr = Files.readAttributes(
+            file.toPath(),
+            BasicFileAttributes::class.java
+        )
+        return attr.creationTime().toMillis()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.menu_sort_by_name -> {
+                sortBy = SortBy.SORT_BY_NAME
+                initRecyclerView()
+            }
+            R.id.menu_sort_by_size -> {
+                sortBy = SortBy.SORT_BY_SIZE
+                initRecyclerView()
+            }
+            R.id.menu_sort_by_time_of_creation -> {
+                sortBy = SortBy.SORT_BY_TIME_OF_CREATION
+                initRecyclerView()
+            }
+            R.id.menu_sort_by_extension -> {
+                sortBy = SortBy.SORT_BY_EXTENSION
+                initRecyclerView()
+            }
+            R.id.menu_sort_ascending -> {
+                sortAscending = true
+                initRecyclerView()
+            }
+            R.id.menu_sort_descending -> {
+                sortAscending = false
+                initRecyclerView()
+            }
+        }
+
+        return true
     }
 }

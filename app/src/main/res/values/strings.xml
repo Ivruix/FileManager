@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">File Manager</string>
+    <string name="sort_by">Sort by</string>
+    <string name="name">Name</string>
+    <string name="size">Size</string>
+    <string name="time_of_creation">Time of creation</string>
+    <string name="extension">Extension</string>
 </resources>
